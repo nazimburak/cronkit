@@ -27,6 +27,8 @@ nextTime := expr.Next(time.Now())
 fmt.Printf("Next Scheduled Time: %s\n", nextTime)
 ```
 
+---
+
 ## Behavior & Notes
 
 | Behavior                      | Description                                       |
