@@ -139,8 +139,8 @@ func TestNext_Edge31FebruaryLike(t *testing.T) {
 	expr, _ := Parse("0 0 31 2 *")
 	base := time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)
 	next := expr.Next(base)
-	if next.Month() == time.February && next.Day() == 31 {
-		t.Errorf("invalid february 31 detected")
+	if !next.IsZero() {
+		t.Errorf("expected zero time for impossible date (31 February), got %v", next)
 	}
 }
 

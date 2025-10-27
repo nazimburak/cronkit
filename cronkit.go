@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const maxIterations = 10000
+
 // Expression represents a parsed cron expression.
 type Expression struct {
 	minutes  fieldSet
@@ -20,7 +22,13 @@ type Expression struct {
 func (e Expression) Next(after time.Time) time.Time {
 	t := after.Truncate(time.Minute).Add(time.Minute)
 
+	iteration := 0
 	for {
+		iteration++
+		if iteration > maxIterations {
+			return time.Time{}
+		}
+
 		if !e.months.has(int(t.Month())) {
 			t = time.Date(t.Year(), t.Month()+1, 1, 0, 0, 0, 0, t.Location())
 			continue
@@ -28,7 +36,18 @@ func (e Expression) Next(after time.Time) time.Time {
 
 		dayMatch := e.days.has(t.Day())
 		weekdayMatch := e.weekdays.has(int(t.Weekday()))
-		isDayValid := dayMatch || weekdayMatch
+
+		var isDayValid bool
+		switch {
+		case e.days.all && e.weekdays.all:
+			isDayValid = true
+		case e.days.all:
+			isDayValid = weekdayMatch
+		case e.weekdays.all:
+			isDayValid = dayMatch
+		default:
+			isDayValid = dayMatch || weekdayMatch
+		}
 
 		if !isDayValid {
 			t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location()).AddDate(0, 0, 1)
