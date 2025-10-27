@@ -19,7 +19,7 @@ type Expression struct {
 }
 
 // Next returns the next time instant matching the expression strictly after `after`.
-func (e Expression) Next(after time.Time) time.Time {
+func (e *Expression) Next(after time.Time) time.Time {
 	t := after.Truncate(time.Minute).Add(time.Minute)
 
 	iteration := 0
@@ -69,32 +69,32 @@ func (e Expression) Next(after time.Time) time.Time {
 }
 
 // Parse parses a standard 5-field cron expression (minute hour day month weekday).
-func Parse(expr string) (Expression, error) {
+func Parse(expr string) (*Expression, error) {
 	parts := strings.Fields(expr)
 	if len(parts) != 5 {
-		return Expression{}, fmt.Errorf("invalid cron: expected 5 fields, got %d", len(parts))
+		return &Expression{}, fmt.Errorf("invalid cron: expected 5 fields, got %d", len(parts))
 	}
 
 	var e Expression
 	var err error
 
 	if e.minutes, err = parseField(parts[0], 0, 59); err != nil {
-		return e, fmt.Errorf("minute: %v", err)
+		return &e, fmt.Errorf("minute: %v", err)
 	}
 	if e.hours, err = parseField(parts[1], 0, 23); err != nil {
-		return e, fmt.Errorf("hour: %v", err)
+		return &e, fmt.Errorf("hour: %v", err)
 	}
 	if e.days, err = parseField(parts[2], 1, 31); err != nil {
-		return e, fmt.Errorf("day: %v", err)
+		return &e, fmt.Errorf("day: %v", err)
 	}
 	if e.months, err = parseField(parts[3], 1, 12); err != nil {
-		return e, fmt.Errorf("month: %v", err)
+		return &e, fmt.Errorf("month: %v", err)
 	}
 	if e.weekdays, err = parseField(parts[4], 0, 6); err != nil {
-		return e, fmt.Errorf("weekday: %v", err)
+		return &e, fmt.Errorf("weekday: %v", err)
 	}
 
-	return e, nil
+	return &e, nil
 }
 
 type fieldSet struct {
